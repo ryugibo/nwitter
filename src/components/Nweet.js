@@ -2,6 +2,8 @@ import { dbService, storageService } from "fbase";
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 const Nweet = ({ nweetObj, isOwner }) => {
   const [editing, setEditing] = useState(false);
@@ -31,14 +33,14 @@ const Nweet = ({ nweetObj, isOwner }) => {
   }
 
   return (
-    <div>
+    <div className="nweet">
       { editing ? (
         <>
-          <form onSubmit={ onSubmit }>
-            <input value={ newNweet } required onChange={ onChange } />
-            <input type="submit" value="Update Nweet" />
+          <form className="container nweetEdit" onSubmit={ onSubmit }>
+            <input className="formInput" value={ newNweet } required onChange={ onChange } placeholder="Edit your nweet" autoFocus />
+            <input className="formBtn" type="submit" value="Update Nweet" />
           </form>
-          <button onClick={ toggleEditing }>Cancel</button>
+          <button className="formBtn cancelBtn" onClick={ toggleEditing }>Cancel</button>
         </>
       ) : (
         <>
@@ -47,10 +49,14 @@ const Nweet = ({ nweetObj, isOwner }) => {
             <img alt="" src={ nweetObj.attachmentUrl } width="50px" height="50px" />
           )}
           { isOwner && (
-            <>
-              <button onClick={ onDeleteClick }>Delete Nweet</button>
-              <button onClick={ toggleEditing }>Edit Nweet</button>
-            </>
+            <div className="nweet__actions">
+              <span onClick={ onDeleteClick }>
+                <FontAwesomeIcon icon={ faTrash } />
+              </span>
+              <span onClick={ toggleEditing }>
+                <FontAwesomeIcon icon={ faPencilAlt } />
+              </span>
+            </div>
           )}
         </>
       )}

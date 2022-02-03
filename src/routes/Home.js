@@ -18,14 +18,24 @@ const Home = ({ userObj }) => {
   }, []);
   
   return (
-    <>
-      <NweetFactory userObj={ userObj } />
-      <div>
-        { nweets.map((nweet) => (
-          <Nweet key={ nweet.id } nweetObj={ nweet } isOwner={ nweet.creatorId === userObj.uid } />
-        ))}
+    <div
+      style={{
+        maxWidth: 890,
+        width: "100%",
+        margin: "0 auto",
+        marginTop: 80,
+        display: "flex",
+        justifyContent: "center",
+    }}>
+      <div className="container">
+        <NweetFactory userObj={ userObj } />
+        <div style={{ marginTop: 30 }}>
+          { nweets.map((nweet) => (
+            <Nweet key={ nweet.id } nweetObj={ nweet } isOwner={ nweet.creatorId === userObj.uid } />
+          ))}
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 
