@@ -3,7 +3,7 @@ import { dbService, storageService } from "fbase";
 import { addDoc, collection, onSnapshot } from "firebase/firestore";
 import Nweet from "components/Nweet";
 import { v4 as uuidv4 } from "uuid";
-import { ref, uploadString } from "firebase/storage";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 
 const Home = ({ userObj }) => {
   const [nweet, setNweet] = useState("");
@@ -22,21 +22,20 @@ const Home = ({ userObj }) => {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    // await addDoc(collection(dbService, "nweets"), {
-    //   text: nweet,
-    //   createdAt: Date.now(),
-    //   creatorId: userObj.uid,
-    // });
-    // setNweet("");
-    console.log("1");
-    const attachmentRef = ref(storageService, `${userObj.uid}/${uuidv4()}`);
-    console.log(attachmentRef);
-    try {
+    let attachmentUrl = "";
+    if (attachment !== "") {
+      const attachmentRef = ref(storageService, `${userObj.uid}/${uuidv4()}`);
       const response = await uploadString(attachmentRef, attachment, "data_url");
-      console.log(response);
-    } catch (e) {
-      console.log(e);
+      attachmentUrl = await getDownloadURL(response.ref);
     }
+    await addDoc(collection(dbService, "nweets"), {
+      text: nweet,
+      createdAt: Date.now(),
+      creatorId: userObj.uid,
+      attachmentUrl,
+    });
+    setNweet("");
+    setAttachment("");
   };
 
   const onChange = (event) => {
@@ -66,7 +65,7 @@ const Home = ({ userObj }) => {
         <input type="submit" value="Nweet" />
         { attachment && (
           <div>
-            <img src={ attachment } width="50px" height="50px" /> 
+            <img alt="" src={ attachment } width="50px" height="50px" /> 
             <button onClick={ onClearAttachment }>Clear</button>
           </div>
         )}
