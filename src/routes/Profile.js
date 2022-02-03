@@ -1,29 +1,46 @@
-import { authService, dbService } from "fbase";
-import { signOut } from "firebase/auth";
-import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
+import { authService } from "fbase";
+import { signOut, updateProfile } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useState } from "react";
 
 const Profile = ({ userObj }) => {
   const Navigate = useNavigate();
+  const [newDisplayName, setNewDisplayName] = useState(userObj.displayName);
+
   const onLogOutClick = () => {
     signOut(authService);
     Navigate("/");
   };
 
-  const getMyNweets = async () => {
-    const nweets = await getDocs(query(collection(dbService, "nweets"), where("creatorId", "==", userObj.uid), orderBy("createdAt", "asc")));
-
-    console.log(nweets.docs.map((doc) => doc.data()));
-    // @TODO: 내 글 목록 표시하기
+  const onChange = (event) => {
+    const { target: { value } } = event;
+    setNewDisplayName(value);
   };
 
-  useEffect(() => {
-    getMyNweets();
-  }, []);
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    if (userObj.displayName !== newDisplayName) {
+      await updateProfile(userObj, { displayName: newDisplayName });
+    }
+  };
+
+  // @TODO: 내 글 목록 표시하기
+  // const getMyNweets = async () => {
+  //   const nweets = await getDocs(query(collection(dbService, "nweets"), where("creatorId", "==", userObj.uid), orderBy("createdAt", "asc")));
+
+  //   console.log(nweets.docs.map((doc) => doc.data()));
+  // };
+
+  // useEffect(() => {
+  //   getMyNweets();
+  // }, []);
 
   return (
     <>
+      <form onSubmit={ onSubmit }>
+        <input type="text" placeholder="Display name" onChange={ onChange } value={newDisplayName} />
+        <input type="submit" value="Update Profile" />
+      </form>
       <button onClick={ onLogOutClick }>Log Out</button>
     </>
   );
