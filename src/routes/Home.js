@@ -8,13 +8,17 @@ const Home = ({ userObj }) => {
   const [nweets, setNweets] = useState([]);
 
   useEffect(() => {
-    onSnapshot(query(collection(dbService, "nweets"), orderBy("createdAt", "desc")), (snapshot) => {
+    const unsubscribe = onSnapshot(query(collection(dbService, "nweets"), orderBy("createdAt", "desc")), (snapshot) => {
       const newArray = snapshot.docs.map((document) => ({
         id: document.id,
         ...document.data(),
       }));
       setNweets(newArray);
     });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
   
   return (
