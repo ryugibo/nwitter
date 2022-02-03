@@ -14,6 +14,9 @@ function App() {
       if (user) {
         setUserObj(user);
         setUserDisplayName(user.displayName);
+      } else {
+        setUserObj(false);
+        setUserDisplayName("");
       }
       setInit(true);
     })
