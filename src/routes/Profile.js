@@ -1,7 +1,12 @@
 import { authService } from "fbase";
-import { signOut, updateProfile } from "firebase/auth";
+import {
+  signOut,
+  updateProfile
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle, faGithub } from "@fortawesome/free-brands-svg-icons";
 
 const Profile = ({ userObj, userDisplayName, refreshUser }) => {
   const Navigate = useNavigate();
@@ -25,6 +30,15 @@ const Profile = ({ userObj, userDisplayName, refreshUser }) => {
     }
   };
 
+  const onSocialClick = async (event) => {
+    const { target: { name } } = event;
+    if (name === "google") {
+      console.log("!!!");
+    } else if (name === "github") {
+      console.log("???");
+    }
+  };
+  
   // @TODO: 내 글 목록 표시하기
   // const getMyNweets = async () => {
   //   const nweets = await getDocs(query(collection(dbService, "nweets"), where("creatorId", "==", userObj.uid), orderBy("createdAt", "asc")));
@@ -52,6 +66,14 @@ const Profile = ({ userObj, userDisplayName, refreshUser }) => {
           <input className="formBtn" type="submit" value="Update Profile" style={{ marginTop: 10 }} />
         </form>
         <span className="formBtn cancelBtn logOut" onClick={ onLogOutClick }>Log Out</span>
+        { userObj.isAnonymous && <>
+          <span className="formBtn logOut" onClick={ onSocialClick } name="google">
+            Credential with Google<FontAwesomeIcon icon={ faGoogle }/>
+          </span>
+          <span className="formBtn logOut" onClick={ onSocialClick } name="github">
+            Credential with Github<FontAwesomeIcon icon={ faGithub }/>
+          </span>
+        </>}
       </div>
     </div>
   );
