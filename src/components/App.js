@@ -13,7 +13,7 @@ function App() {
     onAuthStateChanged(authService, (user) => {
       if (user) {
         setUserObj(user);
-        setUserDisplayName(user.displayName);
+        setUserDisplayName(user.displayName || "");
       } else {
         setUserObj(false);
         setUserDisplayName("");
@@ -24,7 +24,7 @@ function App() {
 
   const refreshUser = () => {
     setUserObj(authService.currentUser);
-    setUserDisplayName(userObj.displayName);
+    setUserDisplayName(userObj.displayName || "");
   };
 
   return (
