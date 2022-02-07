@@ -4,13 +4,17 @@ import {
   updateProfile
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle, faGithub } from "@fortawesome/free-brands-svg-icons";
+import { dbService } from "fbase";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
+import Nweet from "components/Nweet";
 
 const Profile = ({ userObj, userDisplayName, refreshUser }) => {
   const Navigate = useNavigate();
   const [newDisplayName, setNewDisplayName] = useState(userDisplayName);
+  const [myNweets, setMyNweets] = useState([]);
 
   const onLogOutClick = () => {
     signOut(authService);
@@ -38,17 +42,18 @@ const Profile = ({ userObj, userDisplayName, refreshUser }) => {
       console.log("???");
     }
   };
-  
-  // @TODO: 내 글 목록 표시하기
-  // const getMyNweets = async () => {
-  //   const nweets = await getDocs(query(collection(dbService, "nweets"), where("creatorId", "==", userObj.uid), orderBy("createdAt", "asc")));
 
-  //   console.log(nweets.docs.map((doc) => doc.data()));
-  // };
+  const FetchMyNweets = async (userObj) => {
+    const myNweets = (await getDocs(query(collection(dbService, "nweets"), where("creatorId", "==", userObj.uid), orderBy("createdAt", "asc")))).docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setMyNweets(myNweets);
+  };
 
-  // useEffect(() => {
-  //   getMyNweets();
-  // }, []);
+  useEffect(() => {
+    FetchMyNweets(userObj);
+  }, [userObj]);
 
   return (
     <div
@@ -67,13 +72,21 @@ const Profile = ({ userObj, userDisplayName, refreshUser }) => {
         </form>
         <span className="formBtn cancelBtn logOut" onClick={ onLogOutClick }>Log Out</span>
         { userObj.isAnonymous && <>
-          <span className="formBtn logOut" onClick={ onSocialClick } name="google">
+          <span className="formBtn" onClick={ onSocialClick } name="google">
             Credential with Google<FontAwesomeIcon icon={ faGoogle }/>
           </span>
-          <span className="formBtn logOut" onClick={ onSocialClick } name="github">
+          <span className="formBtn" onClick={ onSocialClick } name="github">
             Credential with Github<FontAwesomeIcon icon={ faGithub }/>
           </span>
         </>}
+        <div className="container">
+          <div style={{ marginTop: 30 }}>
+            { myNweets.map((nweet) => {
+              console.log(nweet);
+              return <Nweet key={ nweet.id } nweetObj={ nweet } isOwner={ nweet.creatorId === userObj.uid } />
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
