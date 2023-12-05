@@ -36,6 +36,10 @@ export const Error = styled.span`
   font-weight: 600;
   color: tomato;
 `;
+export const Success = styled.span`
+  font-weight: 600;
+  color: green;
+`;
 export const Switcher = styled.span`
   margin-top: 20px;
   a {
