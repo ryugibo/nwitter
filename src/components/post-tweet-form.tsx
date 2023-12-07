@@ -1,8 +1,9 @@
-import { Firestore, addDoc, collection, updateDoc } from "firebase/firestore";
+import { addDoc, collection, updateDoc } from "firebase/firestore";
 import React, { useState } from "react";
 import styled from "styled-components";
 import { auth, database, storage } from "../firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { Error } from "./auth-components";
 
 const Form = styled.form`
   display: flex;
@@ -59,14 +60,23 @@ export default function PostTweetForm() {
   const [isLoading, setLoading] = useState(false);
   const [tweet, setTweet] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState("");
 
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTweet(e.target.value);
   };
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError("");
     const { files } = e.target;
-    if (!files || files.length != 1) {
-      console.log(files);
+    if (!files || files.length === 0) {
+      return;
+    }
+    if (files.length > 1) {
+      setFileError("Tooo many files.");
+      return;
+    }
+    if (files[0].size > 1048576) {
+      setFileError("File size too big (Max 1MB)");
       return;
     }
     setFile(files[0]);
@@ -122,6 +132,7 @@ export default function PostTweetForm() {
         id="file"
         accept="image/*"
       />
+      {fileError !== "" ? <Error>{fileError}</Error> : null}
       <SubmitButton
         type="submit"
         value={isLoading ? "Posting..." : "Post Tweet"}
