@@ -3,6 +3,8 @@ import { ITweet } from "./timeline";
 import { auth, database, storage } from "../firebase";
 import { deleteDoc, doc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
+import EditTweetDialog from "./edit-tweet-dialog";
+import { useState } from "react";
 
 const Wrapper = styled.div`
   display: grid;
@@ -40,8 +42,21 @@ const DeleteButton = styled.button`
   border-radius: 5px;
   cursor: pointer;
 `;
+const EditButton = styled.button`
+  background-color: #1d9bf0;
+  color: white;
+  font-weight: 600;
+  border: 0;
+  font-size: 12px;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  border-radius: 5px;
+  cursor: pointer;
+`;
 
-export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
+export default function Tweet(tweetProps: ITweet) {
+  const [edit, setEdit] = useState(false);
+  const { username, photo, tweet, userId, id } = tweetProps;
   const user = auth.currentUser;
   const onDelete = async () => {
     if (user?.uid !== userId) {
@@ -62,15 +77,27 @@ export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
     } finally {
     }
   };
+  const onEdit = async () => {
+    setEdit(true);
+  };
+  const onCloseEdit = () => {
+    setEdit(false);
+  };
   return (
     <Wrapper>
       <Column>
         <Username>{username}</Username>
         <Payload>{tweet}</Payload>
         {user?.uid === userId ? (
-          <DeleteButton onClick={onDelete}>delete</DeleteButton>
+          <>
+            <DeleteButton onClick={onDelete}>delete</DeleteButton>
+            <EditButton onClick={onEdit}>edit</EditButton>
+          </>
         ) : null}
       </Column>
+      {edit ? (
+        <EditTweetDialog onClose={onCloseEdit} tweet={tweetProps} />
+      ) : null}
       <Column>{photo ? <Photo src={photo} /> : null}</Column>
     </Wrapper>
   );
