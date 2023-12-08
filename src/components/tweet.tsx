@@ -8,7 +8,11 @@ const Wrapper = styled.div`
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 15px;
 `;
-const Column = styled.div``;
+const Column = styled.div`
+  &:last-child {
+    place-self: end;
+  }
+`;
 const Photo = styled.img`
   width: 100px;
   height: 100px;
@@ -29,11 +33,7 @@ export default function Tweet({ username, photo, tweet }: ITweet) {
         <Username>{username}</Username>
         <Payload>{tweet}</Payload>
       </Column>
-      {photo ? (
-        <Column>
-          <Photo src={photo} />
-        </Column>
-      ) : null}
+      <Column>{photo ? <Photo src={photo} /> : null}</Column>
     </Wrapper>
   );
 }
