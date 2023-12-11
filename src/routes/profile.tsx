@@ -1,8 +1,18 @@
 import styled from "styled-components";
-import { auth, storage } from "../firebase";
-import React, { useState } from "react";
+import { auth, database, storage } from "../firebase";
+import React, { useEffect, useState } from "react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { updateProfile } from "firebase/auth";
+import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import Tweet from "../components/tweet";
+import { ITweet } from "../components/timeline";
 
 const Wrapper = styled.div`
   display: flex;
@@ -33,10 +43,17 @@ const AvatarInput = styled.input`
 const Name = styled.span`
   font-size: 22px;
 `;
+const Tweets = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
 
 export default function Profile() {
   const user = auth.currentUser;
   const [avatar, setAvatar] = useState(user?.photoURL);
+  const [tweets, setTweets] = useState<ITweet[]>([]);
 
   const onChangeAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!user) {
@@ -55,6 +72,26 @@ export default function Profile() {
       photoURL: avatarUrl,
     });
   };
+  const fetchTweets = async () => {
+    if (!user) {
+      return;
+    }
+    const tweetsQuery = query(
+      collection(database, "tweets"),
+      where("userId", "==", user.uid),
+      orderBy("createdAt", "desc"),
+      limit(25)
+    );
+    const snapshot = await getDocs(tweetsQuery);
+    const tweets = snapshot.docs.map((doc) => {
+      const { tweet, createdAt, userId, username, photo } = doc.data();
+      return { tweet, createdAt, userId, username, photo, id: doc.id };
+    });
+    setTweets(tweets);
+  };
+  useEffect(() => {
+    fetchTweets();
+  }, []);
   return (
     <Wrapper>
       <AvatarUpload htmlFor="avatar">
@@ -78,6 +115,11 @@ export default function Profile() {
         accept="image/*"
       />
       <Name>{user?.displayName ?? "Anonymous"}</Name>
+      <Tweets>
+        {tweets.map((tweet) => (
+          <Tweet key={tweet.id} {...tweet} />
+        ))}
+      </Tweets>
     </Wrapper>
   );
 }
