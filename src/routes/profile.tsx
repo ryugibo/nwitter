@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import Tweet from "../components/tweet";
 import { ITweet } from "../components/timeline";
+import { Error } from "../components/auth-components";
 
 const Wrapper = styled.div`
   display: flex;
@@ -49,11 +50,44 @@ const Tweets = styled.div`
   flex-direction: column;
   gap: 10px;
 `;
+const EditNameTextField = styled.textarea`
+  border: 2px solid white;
+  padding: 20px;
+  border-radius: 20px;
+  font-size: 16px;
+  color: white;
+  background-color: black;
+  width: 100%;
+  resize: none;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  &::placeholder {
+    font-size: 16px;
+  }
+  &:focus {
+    outline: none;
+    border-color: #1d9bf0;
+  }
+`;
+const EditNameButton = styled.button`
+  background-color: #1d9bf0;
+  color: white;
+  font-weight: 600;
+  border: 0;
+  font-size: 12px;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  border-radius: 5px;
+  cursor: pointer;
+`;
 
 export default function Profile() {
   const user = auth.currentUser;
   const [avatar, setAvatar] = useState(user?.photoURL);
   const [tweets, setTweets] = useState<ITweet[]>([]);
+  const [newName, setNewName] = useState("");
+  const [isEdit, setEditing] = useState(false);
+  const [errorEditName, setErrorEditName] = useState("");
 
   const onChangeAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!user) {
@@ -89,8 +123,34 @@ export default function Profile() {
     });
     setTweets(tweets);
   };
+  const onClickEditName = () => {
+    setEditing(true);
+  };
+  const onClickApplyName = async () => {
+    setErrorEditName("");
+    if (!user) {
+      return;
+    }
+    if (newName === "") {
+      setErrorEditName("Can't change to empty name.");
+      return;
+    }
+    await updateProfile(user, {
+      displayName: newName,
+    });
+    setEditing(false);
+  };
+  const onChangeEditNameField = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const {
+      target: { value },
+    } = e;
+    setNewName(value);
+  };
   useEffect(() => {
     fetchTweets();
+    if (user && user.displayName) {
+      setNewName(user.displayName);
+    }
   }, []);
   return (
     <Wrapper>
@@ -114,7 +174,18 @@ export default function Profile() {
         type="file"
         accept="image/*"
       />
-      <Name>{user?.displayName ?? "Anonymous"}</Name>
+      {isEdit ? (
+        <>
+          <EditNameTextField onChange={onChangeEditNameField} value={newName} />
+          <EditNameButton onClick={onClickApplyName}>Apply</EditNameButton>
+          {errorEditName !== "" ? <Error>{errorEditName}</Error> : null}
+        </>
+      ) : (
+        <>
+          <Name>{user?.displayName ?? "Anonymous"}</Name>
+          <EditNameButton onClick={onClickEditName}>Edit</EditNameButton>
+        </>
+      )}
       <Tweets>
         {tweets.map((tweet) => (
           <Tweet key={tweet.id} {...tweet} />
